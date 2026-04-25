@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lab Audit">
+<title>Lab Safety Audit</title>
+<style>
+:root{
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-d:#0C447C;
+  --green:#3B6D11;--green-l:#EAF3DE;--green-m:#639922;
+  --red:#A32D2D;--red-l:#FCEBEB;--red-m:#E24B4A;
+  --amber:#854F0B;--amber-l:#FAEEDA;--amber-m:#BA7517;
+  --gray:#444441;--gray-l:#F1EFE8;--gray-m:#888780;
+  --purple:#3C3489;--purple-l:#EEEDFE;
+  --bg:#F5F5F3;--sur:#FFFFFF;--bdr:rgba(0,0,0,0.1);
+  --tx:#1a1a18;--tx2:#5F5E5A;--tx3:#888780;
+  --r:12px;--rs:8px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1C1C1A;--sur:#2A2A28;--bdr:rgba(255,255,255,0.1);
+  --tx:#F1EFE8;--tx2:#B4B2A9;--tx3:#888780;
+  --blue-l:#0C2D50;--green-l:#173404;--red-l:#3A1515;--amber-l:#3A2010;--gray-l:#2C2C2A;--purple-l:#1E1B40;
+}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans Thai',sans-serif;font-size:15px;color:var(--tx);background:var(--bg);}
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;}
+.topbar{background:var(--sur);border-bottom:.5px solid var(--bdr);padding:14px 16px 10px;flex-shrink:0;}
+.topbar-t{font-size:17px;font-weight:700;}
+.topbar-s{font-size:12px;color:var(--tx2);margin-top:2px;}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.page{display:none;padding:12px;}
+.page.active{display:block;}
+.nav{display:flex;background:var(--sur);border-top:.5px solid var(--bdr);padding-bottom:env(safe-area-inset-bottom);flex-shrink:0;}
+.nb{flex:1;padding:10px 2px 8px;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--tx3);cursor:pointer;}
+.nb.on{color:var(--blue);}
+.ni{font-size:20px;line-height:1;}
+.slbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px;}
+.card{background:var(--sur);border-radius:var(--r);border:.5px solid var(--bdr);padding:14px 16px;margin-bottom:10px;}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.st{background:var(--sur);border-radius:var(--rs);border:.5px solid var(--bdr);padding:12px;}
+.sl{font-size:11px;color:var(--tx2);margin-bottom:4px;}
+.sv{font-size:24px;font-weight:700;}
+.chip{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.ca{background:var(--blue-l);color:var(--blue-d);}
+.cq{background:var(--purple-l);color:var(--purple);}
+.cm{background:var(--green-l);color:var(--green);}
+.cb{background:var(--amber-l);color:var(--amber);}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.by{background:var(--green-l);color:var(--green);}
+.bn{background:var(--red-l);color:var(--red);}
+.bna{background:var(--gray-l);color:var(--gray);}
+.bp{background:var(--amber-l);color:var(--amber);}
+.prog{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:8px 0;}
+.pf{height:100%;background:var(--blue);border-radius:3px;transition:width .4s;}
+.frow{display:flex;gap:6px;overflow-x:auto;padding:0 0 8px;scrollbar-width:none;margin-bottom:4px;}
+.frow::-webkit-scrollbar{display:none;}
+.fc{white-space:nowrap;padding:7px 14px;border-radius:20px;border:.5px solid var(--bdr);background:var(--sur);font-size:13px;cursor:pointer;color:var(--tx2);}
+.fc.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600;}
+.ci{background:var(--sur);border-radius:var(--rs);border:.5px solid var(--bdr);padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+.ci:active{background:var(--bg);}
+.ci.dn{border-left:3px solid var(--green-m);}
+.ci.fl{border-left:3px solid var(--red-m);}
+.ci.xna{border-left:3px solid var(--gray-m);}
+.ctop{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.cno{font-size:12px;font-weight:600;color:var(--tx3);min-width:26px;}
+.ctx{font-size:13px;line-height:1.5;flex:1;}
+.cft{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.fl2{font-size:12px;color:var(--tx2);margin:12px 0 5px;}
+select,input[type=text],input[type=date],textarea{width:100%;padding:10px 12px;border-radius:var(--rs);border:.5px solid var(--bdr);background:var(--bg);color:var(--tx);font-size:14px;font-family:inherit;appearance:none;-webkit-appearance:none;}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:-1px;}
+textarea{resize:none;line-height:1.5;}
+.bp1{width:100%;padding:14px;border-radius:var(--rs);border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit;transition:opacity .15s;}
+.bp1:active{opacity:.8;}
+.bp1:disabled{opacity:.5;cursor:not-allowed;}
+.bp2{width:100%;padding:12px;border-radius:var(--rs);border:.5px solid var(--bdr);background:none;color:var(--tx);font-size:14px;cursor:pointer;margin-top:8px;font-family:inherit;}
+.bp2:active{background:var(--bg);}
+.yr{display:flex;gap:8px;margin:4px 0;}
+.yb{flex:1;padding:12px 6px;border-radius:var(--rs);border:1.5px solid var(--bdr);background:var(--sur);font-size:13px;font-weight:600;cursor:pointer;color:var(--tx2);transition:all .12s;font-family:inherit;}
+.yb.sy{background:var(--green-l);color:var(--green);border-color:var(--green-m);}
+.yb.sn{background:var(--red-l);color:var(--red);border-color:var(--red-m);}
+.yb.sna{background:var(--gray-l);color:var(--gray);border-color:var(--gray-m);}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:flex-end;justify-content:center;}
+.ov.open{display:flex;}
+.sh{background:var(--sur);border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px calc(32px + env(safe-area-inset-bottom));}
+.shh{width:40px;height:4px;background:var(--bdr);border-radius:2px;margin:12px auto 16px;}
+.sht{font-size:16px;font-weight:700;margin-bottom:4px;}
+.shs{font-size:12px;color:var(--tx2);margin-bottom:12px;}
+.ar{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:.5px solid var(--bdr);}
+.ar:last-child{border-bottom:none;}
+.av{width:40px;height:40px;border-radius:50%;background:var(--blue-l);color:var(--blue-d);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.li{background:var(--sur);border-radius:var(--rs);border:.5px solid var(--bdr);padding:12px 14px;margin-bottom:8px;}
+.lh{display:flex;justify-content:space-between;align-items:flex-start;}
+.ld{font-size:13px;font-weight:600;}
+.la{font-size:11px;color:var(--tx2);margin-top:2px;}
+.ls{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.sstep{display:flex;gap:14px;margin-bottom:20px;}
+.snum{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sbod{flex:1;}
+.stit{font-size:14px;font-weight:600;margin-bottom:4px;}
+.sdsc{font-size:13px;color:var(--tx2);line-height:1.5;}
+.sbar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--rs);font-size:12px;margin-bottom:10px;line-height:1.5;}
+.sok{background:var(--green-l);color:var(--green);}
+.swn{background:var(--amber-l);color:var(--amber);}
+.ser{background:var(--red-l);color:var(--red);}
+.ntc{background:var(--blue-l);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--blue-d);margin-bottom:12px;line-height:1.5;}
+.rt{width:100%;border-collapse:collapse;font-size:12px;}
+.rt th{font-size:10px;color:var(--tx2);padding:6px 4px;text-align:left;border-bottom:.5px solid var(--bdr);}
+.rt td{padding:8px 4px;border-bottom:.5px solid var(--bdr);vertical-align:top;line-height:1.4;}
+.empty{text-align:center;padding:48px 20px;color:var(--tx2);}
+.ei{font-size:40px;margin-bottom:10px;}
+.row2{display:flex;justify-content:space-between;align-items:center;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:1000;opacity:0;transition:opacity .3s;max-width:300px;text-align:center;white-space:nowrap;}
+.toast.show{opacity:1;}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.padd{height:76px;border-radius:var(--rs);border:1.5px dashed var(--bdr);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--bg);color:var(--tx3);font-size:26px;}
+.pthumb{height:76px;border-radius:var(--rs);overflow:hidden;position:relative;}
+.pthumb img{width:100%;height:100%;object-fit:cover;}
+.pdel{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.codebox{background:var(--bg);border-radius:var(--rs);padding:10px 12px;font-family:'Courier New',monospace;font-size:10px;color:var(--blue);border:.5px solid var(--bdr);word-break:break-all;margin-top:6px;white-space:pre-wrap;max-height:200px;overflow-y:auto;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="row2">
+      <div><div class="topbar-t">🔬 Lab Safety Audit</div><div class="topbar-s" id="tsub">Biomolecular Laboratory</div></div>
+      <div id="syncind" style="font-size:11px;color:var(--tx3);">⚡ Local</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div id="hstatus"></div>
+      <div class="slbl">ภาพรวม</div>
+      <div class="sg">
+        <div class="st"><div class="sl">รายการทั้งหมด</div><div class="sv" style="color:var(--blue)" id="s0">91</div></div>
+        <div class="st"><div class="sl">ตรวจแล้ว</div><div class="sv" style="color:var(--green)" id="s1">0</div></div>
+        <div class="st"><div class="sl">ยังไม่ตรวจ</div><div class="sv" style="color:var(--amber)" id="s2">91</div></div>
+        <div class="st"><div class="sl">พบปัญหา (N)</div><div class="sv" style="color:var(--red)" id="s3">0</div></div>
+      </div>
+      <div class="card" style="padding:12px 16px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">ความคืบหน้า</div>
+        <div class="prog"><div class="pf" id="pb" style="width:0%"></div></div>
+        <div style="font-size:11px;color:var(--tx2);" id="pt">0 จาก 91 รายการ</div>
+      </div>
+      <div class="slbl">ผู้ตรวจสอบ</div>
+      <div class="card" style="padding:6px 16px;">
+        <div class="ar"><div class="av">จีร</div><div style="flex:1"><div style="font-size:13px;font-weight:600;">จีรวรรณ ศรีษะคำ</div><div style="font-size:11px;color:var(--tx2);">Quality Manager</div></div><span class="chip ca">Annual</span></div>
+        <div class="ar"><div class="av">นนท</div><div style="flex:1"><div style="font-size:13px;font-weight:600;">นนทพร อังศุวิทยา</div><div style="font-size:11px;color:var(--tx2);">Lab Safety Officer</div></div><span class="chip cq">Q/Bi</span></div>
+        <div class="ar"><div class="av">ลลิ</div><div style="flex:1"><div style="font-size:13px;font-weight:600;">ลลิตา มหากลั่น</div><div style="font-size:11px;color:var(--tx2);">Quality Officer</div></div><span class="chip cm">Monthly</span></div>
+      </div>
+      <button class="bp1" onclick="go('audit')">▶ เริ่ม Audit ใหม่</button>
+      <button class="bp2" onclick="go('logs')">📋 ดู Audit Log</button>
+      <button class="bp2" onclick="go('setup')">⚙️ ตั้งค่า Google Sheets</button>
+    </div>
+
+    <!-- AUDIT -->
+    <div class="page" id="page-audit">
+      <div class="ntc">กรุณาเลือกผู้ตรวจและวันที่ก่อนเริ่มตรวจสอบ</div>
+      <div class="card">
+        <div class="fl2">ผู้ตรวจ (Auditor)</div>
+        <select id="saudi">
+          <option value="">— เลือกชื่อผู้ตรวจ —</option>
+          <option>จีรวรรณ ศรีษะคำ</option>
+          <option>นนทพร อังศุวิทยา</option>
+          <option>ลลิตา มหากลั่น</option>
+        </select>
+        <div class="fl2">วันที่ตรวจ</div>
+        <input type="date" id="sdate">
+      </div>
+      <div class="frow" id="frow">
+        <button class="fc on" onclick="filt('All',this)">ทั้งหมด (91)</button>
+        <button class="fc" onclick="filt('Annual',this)">Annual (22)</button>
+        <button class="fc" onclick="filt('Quarterly',this)">Quarterly (18)</button>
+        <button class="fc" onclick="filt('Monthly',this)">Monthly (27)</button>
+        <button class="fc" onclick="filt('Biweekly',this)">Biweekly (24)</button>
+      </div>
+      <div id="clist"></div>
+      <div style="height:12px;"></div>
+      <button class="bp1" id="sbtn" onclick="saveAudit()">💾 บันทึกลง Google Sheets</button>
+      <button class="bp2" onclick="clearS()">🗑 ล้างค่าทั้งหมด</button>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="page" id="page-logs">
+      <div class="slbl">ประวัติ Audit</div>
+      <div id="llist"><div class="empty"><div class="ei">📋</div><div>ยังไม่มีข้อมูล Audit</div></div></div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="page" id="page-report">
+      <div class="card">
+        <div class="fl2">เลือก Audit</div>
+        <select id="srlog"></select>
+        <div class="fl2">กรองตามความถี่</div>
+        <select id="srfreq">
+          <option value="All">ทุกความถี่</option>
+          <option value="Annual">Annual</option>
+          <option value="Quarterly">Quarterly</option>
+          <option value="Monthly">Monthly</option>
+          <option value="Biweekly">Biweekly</option>
+        </select>
+        <button class="bp1" onclick="buildReport()">📄 สร้างรายงาน</button>
+      </div>
+      <div id="rout"></div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="page" id="page-setup">
+      <div class="slbl">ตั้งค่า Google Sheets</div>
+
+      <div class="sstep">
+        <div class="snum">1</div>
+        <div class="sbod">
+          <div class="stit">สร้าง Google Sheets ใหม่</div>
+          <div class="sdsc">เปิด <strong>sheets.google.com</strong> → สร้าง Spreadsheet ใหม่ → ตั้งชื่อ "Lab Safety Audit Log"<br><br>จด <strong>Spreadsheet ID</strong> จาก URL:<br><code style="font-size:11px;background:var(--bg);padding:3px 6px;border-radius:4px;">docs.google.com/spreadsheets/d/<strong>[ID_อยู่ตรงนี้]</strong>/edit</code></div>
+          <div class="fl2" style="margin-top:10px;">วาง Spreadsheet ID</div>
+          <input type="text" id="isid" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgm..." oninput="chkSetup()">
+        </div>
+      </div>
+
+      <div class="sstep">
+        <div class="snum">2</div>
+        <div class="sbod">
+          <div class="stit">สร้าง Apps Script</div>
+          <div class="sdsc">ใน Sheets → <strong>Extensions → Apps Script</strong> → ลบโค้ดเดิม → วางโค้ดนี้:</div>
+          <div class="codebox" id="ascode">กรอก Spreadsheet ID ก่อน (ขั้นตอนที่ 1)</div>
+          <button class="bp2" style="margin-top:8px;" onclick="copyCode()">📋 คัดลอกโค้ด</button>
+        </div>
+      </div>
+
+      <div class="sstep">
+        <div class="snum">3</div>
+        <div class="sbod">
+          <div class="stit">Deploy เป็น Web App</div>
+          <div class="sdsc">ใน Apps Script → <strong>Deploy → New deployment</strong><br>→ Type: <strong>Web app</strong><br>→ Execute as: <strong>Me</strong><br>→ Who has access: <strong>Anyone</strong><br>→ กด Deploy → Copy URL ที่ได้</div>
+          <div class="fl2" style="margin-top:10px;">วาง Web App URL</div>
+          <input type="text" id="iwurl" placeholder="https://script.google.com/macros/s/..." oninput="chkSetup()">
+        </div>
+      </div>
+
+      <div class="sstep">
+        <div class="snum">4</div>
+        <div class="sbod">
+          <div class="stit">ทดสอบและบันทึก</div>
+          <button class="bp1" onclick="testConn()" id="tbtn" disabled style="margin-top:4px;">🔗 ทดสอบการเชื่อมต่อ</button>
+          <div id="tres" style="margin-top:8px;"></div>
+          <button class="bp1" onclick="doSave()" id="svbtn" disabled style="background:var(--green);">✅ บันทึกการตั้งค่า</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nb on" id="nav-home" onclick="go('home')"><span class="ni">🏠</span><span>หน้าแรก</span></button>
+    <button class="nb" id="nav-audit" onclick="go('audit')"><span class="ni">✅</span><span>ตรวจสอบ</span></button>
+    <button class="nb" id="nav-logs" onclick="go('logs')"><span class="ni">📋</span><span>บันทึก</span></button>
+    <button class="nb" id="nav-report" onclick="go('report')"><span class="ni">📄</span><span>รายงาน</span></button>
+    <button class="nb" id="nav-setup" onclick="go('setup')"><span class="ni">⚙️</span><span>ตั้งค่า</span></button>
+  </div>
+</div>
+
+<!-- ITEM SHEET -->
+<div class="ov" id="iov" onclick="closeOv(event)">
+  <div class="sh">
+    <div class="shh"></div>
+    <div class="sht" id="sht"></div>
+    <div class="shs" id="shs"></div>
+    <div style="background:var(--bg);border-radius:var(--rs);padding:8px 10px;font-size:12px;color:var(--tx2);line-height:1.5;margin-bottom:14px;" id="shreq"></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">ผลการตรวจสอบ</div>
+    <div class="yr">
+      <button class="yb" id="by" onclick="setA('Y')">Y<br><span style="font-size:10px;font-weight:400;">ผ่าน</span></button>
+      <button class="yb" id="bn" onclick="setA('N')">N<br><span style="font-size:10px;font-weight:400;">ไม่ผ่าน</span></button>
+      <button class="yb" id="bna" onclick="setA('NA')">NA<br><span style="font-size:10px;font-weight:400;">ไม่เกี่ยวข้อง</span></button>
+    </div>
+    <div class="fl2">หลักฐาน / รายละเอียดที่พบ</div>
+    <textarea id="snote" rows="3" placeholder="ระบุรายละเอียด..."></textarea>
+    <div class="fl2">รูปถ่าย (ถ้ามี)</div>
+    <div class="pgrid" id="pgrid"><div class="padd" onclick="pickPh()">+</div></div>
+    <input type="file" id="finput" accept="image/*" style="display:none" multiple onchange="handlePh(event)">
+    <button class="bp1" onclick="saveItem()">บันทึกรายการนี้</button>
+    <button class="bp2" onclick="closeSheet()">ยกเลิก</button>
+    <div style="height:8px;"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CL=[
+{no:1,due:'Annual',text:'มีนโยบายด้านความปลอดภัยและสุขภาพสำหรับห้องปฏิบัติการ มีการทบทวนเป็นประจำทุกปี และเจ้าหน้าที่รับทราบโดยทั่วกัน',req:'ISO15190 5.2 / LA:2565 1* / FMS4'},
+{no:2,due:'Annual',text:'มีการกำหนดผู้ดูแลรับผิดชอบ LAB Safety Officer (LSO)',req:'LA:2565 2* / ISO15190 5.5 / GLD3'},
+{no:3,due:'Annual',text:'LSO ทำหน้าที่ประเมินความเสี่ยงด้านความปลอดภัย ครอบคลุมทุกด้าน เช่น จุลชีพ เคมี รังสี กายภาพ ขยะ อุบัติเหตุ',req:'LA:2565 3* / ISO15190 5.5 / GLD3 FMS3'},
+{no:4,due:'Annual',text:'LSO ทำหน้าที่จัดทำแผน/โปรแกรมความปลอดภัยภายในห้องปฏิบัติการ',req:'ISO9001 6.2 / ISO15190 5.9,7.1 / FMS4'},
+{no:5,due:'Quarterly',text:'LSO จัดให้มีการฝึกอบรมเรื่องความปลอดภัยให้แก่บุคลากรใหม่ เจ้าหน้าที่ขนส่ง เจ้าหน้าที่บำรุงรักษา มีการประเมินประสิทธิผล',req:'ISO9001 6.2 / ISO15190 5.9,7.1 / FMS4'},
+{no:6,due:'Annual',text:'มีการตรวจสอบและติดตามด้านความปลอดภัยภายในห้องปฏิบัติการ (Safety Audit) อย่างน้อยปีละ 1 ครั้ง',req:'ISO9001 6.2 / ISO15190 5.7 / FMS4'},
+{no:7,due:'Quarterly',text:'เจ้าหน้าที่และบุคคลที่เกี่ยวข้องต้องได้รับการอบรมด้านความปลอดภัยก่อนการเข้างาน',req:'ISO9001 7.1 / ISO15190 5.9,6.1 / FMS11 SQE8'},
+{no:8,due:'Annual',text:'มีคู่มือความปลอดภัย (Safety Manual) ครอบคลุม: นโยบาย, First aid, สารเคมี, ชีวภาพ, ไฟฟ้า, ของเสีย, ฉุกเฉิน, ป้องกันติดเชื้อ',req:'ISO9001 7.5 / ISO15190 5.6 / QPS3'},
+{no:9,due:'Quarterly',text:'เจ้าหน้าที่ได้อ่านและรับทราบคู่มือความปลอดภัยฉบับปัจจุบัน',req:'—'},
+{no:10,due:'Quarterly',text:'มีการประเมินความปลอดภัยของสถานที่และสิ่งแวดล้อม ครอบคลุม lab design, layout, physical structure, fire safety, ergonomics',req:'ISO9001 6.1 / ISO15190 6 / FMS4'},
+{no:11,due:'Quarterly',text:'มีการจัดวางผังห้องโดยแบ่งพื้นที่ปฏิบัติงานตามลักษณะงาน เช่น พื้นที่สะอาด / เขตติดเชื้อ',req:'ISO9001 7.1.4 / ISO15190 4.2 / FMS4'},
+{no:12,due:'Annual',text:'มีโครงสร้างพื้นฐานที่เอื้อต่อความปลอดภัย เช่น พื้นรับน้ำหนักเครื่องมือ ความกว้างประตู พื้นเรียบไม่ลื่น',req:'ISO9001 7.1.3 / ISO15190 4.2 / FMS4'},
+{no:13,due:'Monthly',text:'การจัดวางเครื่องมือคำนึงถึงความปลอดภัย ไม่วางเครื่องใช้ไฟฟ้าใกล้บริเวณที่มีน้ำ',req:'ISO9001 7.1.4 / ISO15190 9.3 / FMS4'},
+{no:14,due:'Monthly',text:'มีการตรวจสอบสายไฟฟ้า อุปกรณ์ทางไฟฟ้า และเครื่องใช้ไฟฟ้าอื่นๆ อยู่เสมอ',req:'ISO9001 7.1.4 / ISO15190 9.3 / AOP5 FMS8'},
+{no:15,due:'Biweekly',text:'ระบบสาธารณูปโภค เช่น ประปา ไฟฟ้า พร้อมใช้งาน',req:'—'},
+{no:16,due:'Quarterly',text:'มีระบบสายดินสำหรับอุปกรณ์ไฟฟ้าทุกชนิดในห้องปฏิบัติการ',req:'ISO9001 7.1.4 / ISO15190 9.3 / FMS9'},
+{no:17,due:'Monthly',text:'มีไฟฟ้าสำรอง UPS สำหรับเครื่องมือหลัก/สำคัญ มีการตรวจสอบอย่างเหมาะสม',req:'ISO9001 7.1.4 / FMS8 FMS9'},
+{no:18,due:'Annual',text:'อากาศเสียจากห้องปฏิบัติการต้องถูกระบายทิ้งเหนือระดับหลังคา BSC/Fume hood ต้องได้รับการบำบัดก่อนปล่อยออก',req:'ISO9001 7.1.4 / ISO15190 4.2,9.2 / PCI7'},
+{no:19,due:'Monthly',text:'มีแสงสว่าง อุณหภูมิ เสียง การระบายอากาศเหมาะสม และมีการตรวจวัดแสงในพื้นที่ปฏิบัติงานประจำปี',req:'ISO9001 7.1.4 / ISO15190 4.2,9 / FMS4'},
+{no:20,due:'Biweekly',text:'มีอ่างล้างมือเพียงพอ มีสบู่/น้ำยาล้างมือ ผ้า/กระดาษเช็ดมือเพียงพอ และใกล้ทางออก',req:'ISO9001 7.1.4 / ISO15190 4.2,14.6 / PCI9'},
+{no:21,due:'Annual',text:'ถังแก๊สมีการตรวจสอบว่าไม่มีการรั่วไหลอย่างสม่ำเสมอ และมีการใช้ที่ยึด/โซ่ล่ามเพื่อกันล้ม (ถ้ามี)',req:'ISO9001 7.1.4 / ISO15190 9.1 / FMS7'},
+{no:22,due:'Monthly',text:'มีอุปกรณ์ดับเพลิง ถังดับเพลิง ระบบสัญญาณเตือนภัย เครื่องดักจับควัน มีการชี้บ่งชัดเจน ดูแลตรวจสอบสม่ำเสมอ',req:'ISO9001 7.1.4 / ISO15190 11.1 / FMS7'},
+{no:23,due:'Quarterly',text:'มีป้ายบอกทางหนีไฟ ทางออกฉุกเฉิน สามารถมองเห็นได้ในที่มืด ไม่มีสิ่งกีดขวาง',req:'ISO9001 7.1.4 / ISO15190 11.2 / FMS7'},
+{no:24,due:'Quarterly',text:'เครื่องมือขนาดใหญ่ต้องวางให้มีช่องว่างรอบเครื่องเพื่อระบายความร้อน สะดวกต่อการปฏิบัติงาน',req:'ISO9001 7.1.4 / FMS8'},
+{no:25,due:'Monthly',text:'ปฏิบัติงานใน fume hood หรือ BSC เมื่อมี aerosol เพื่อป้องกันการฟุ้งกระจายของสารเคมีและสารชีวภาพ',req:'ISO15190 7.1.4,7.4,7.7 / FMS8'},
+{no:26,due:'Monthly',text:'มีชุดทำความสะอาด Biological spill kit และ Chemical spill kit พร้อมใช้งาน',req:'ISO9001 7.1.4 / ISO15190 10.5 / FMS5'},
+{no:27,due:'Annual',text:'มีแนวทางหรือขั้นตอนวิธีปฏิบัติที่เกี่ยวกับการทำให้ปราศจากเชื้อ/สารปนเปื้อน (Decontamination)',req:'ISO9001 7.1.4 / ISO15190 7.5 / PCI7'},
+{no:28,due:'Annual',text:'มีการกำหนดนโยบายและขั้นตอนการกำจัดขยะ/ของเสียจากห้องปฏิบัติการ',req:'ISO9001 7.1.4 / ISO15190 17 / FMS5'},
+{no:29,due:'Monthly',text:'มีบันทึกการกำจัดขยะอันตราย การทำ spore test',req:'—'},
+{no:30,due:'Biweekly',text:'มีการระบุของเสียที่ไม่เป็นอันตราย และแยกเก็บออกจากภาชนะรับของเสียอันตราย',req:'ISO9001 7.1.4 / ISO15190 17.4 / FMS5'},
+{no:31,due:'Quarterly',text:'เก้าอี้นั่งควรปรับได้ตามสรีระของบุคลากรแต่ละคน เช่น ความสูง พนักพิงที่ปรับมุมได้ ลด ergonomic distress',req:'ISO9001 7.1.4 / ISO15190 12 / FMS8'},
+{no:32,due:'Biweekly',text:'สวมเสื้อกาวน์ยาว แขนยาว เมื่อตรวจวิเคราะห์ สวม PPE เหมาะสมกับกิจกรรม รวมถึงผู้มาติดต่อ',req:'ISO15190 7.1.4,15.2 / PCI9 AOP5'},
+{no:33,due:'Annual',text:'กรณีชุดยูนิฟอร์มหรือชุดคลินิกต้องสวมเสื้อกาวน์ยาวทับทุกครั้งเมื่อปฏิบัติงานตรวจวิเคราะห์',req:'ISO15190 7.1.4,15.2 / PCI9 AOP5'},
+{no:34,due:'Biweekly',text:'เก็บเสื้อกาวน์ที่ใช้แล้ว/กำลังใช้งาน แยกออกจากเสื้อกาวน์สะอาด',req:'ISO15190 7.1.4,15.2 / PCI9'},
+{no:35,due:'Biweekly',text:'ถอดเสื้อกาวน์เมื่อออกจากห้องปฏิบัติการ',req:'ISO15190 7.1.4,15.2 / PCI9 AOP5'},
+{no:36,due:'Biweekly',text:'สวมรองเท้าแบบปิดนิ้วเท้า ส้นเท้า และหลังเท้า เพื่อป้องกันการหกของตัวอย่าง/สารเคมี/ของมีคม',req:'ISO15190 15.6 / PCI9'},
+{no:37,due:'Biweekly',text:'ห้ามรับประทานอาหาร ดื่มเครื่องดื่ม เสริมสวย ใส่คอนแทคเลนส์ สูบบุหรี่ ในพื้นที่ห้องปฏิบัติการ',req:'ISO15190 14.1,14.2 / FMS5'},
+{no:38,due:'Biweekly',text:'สวมใส่ถุงมือเมื่อสัมผัสตัวอย่าง/เจาะเลือด สวมใส่ให้เหมาะสมกับกิจกรรม ไม่มีรอยฉีกขาด เปลี่ยนบ่อยๆ',req:'ISO15190 15.5 / PCI9'},
+{no:39,due:'Biweekly',text:'ถอดถุงมือเมื่อจับโทรศัพท์ / เปิด-ปิดประตู / ใช้ keyboard / ออกจาก LAB',req:'ISO15190 15.5 / PCI7'},
+{no:40,due:'Biweekly',text:'ล้างมือ Hand Hygiene หลังถอดถุงมือ ก่อน/หลังเข้าห้องน้ำ ก่อนออกจากห้องปฏิบัติการ และมี Poster แนะนำการล้างมือ',req:'ISO15190 7.6,14.6 / IPSG5'},
+{no:41,due:'Monthly',text:'ห้ามเก็บของไว้ใต้อ่างล้างมือ',req:'—'},
+{no:42,due:'Biweekly',text:'ห้ามใช้อ่างล้างมือเพื่อทิ้งตัวอย่างเลือดและสารคัดหลั่ง',req:'—'},
+{no:43,due:'Annual',text:'มีการตรวจสุขภาพบุคลากรประจำปีอย่างสม่ำเสมอ มีบันทึก',req:'ISO9001 7.1.2 / ISO15190 5.2 / SQE8.2'},
+{no:44,due:'Biweekly',text:'การทำความสะอาดบริเวณปฏิบัติงานทุกครั้งเมื่อเสร็จงาน ใช้น้ำยาฆ่าเชื้อเช็ดโต๊ะ รวมถึงกรณีหกเลอะหรือกระเด็น',req:'ISO15190 7.5,18 / PCI7'},
+{no:45,due:'Biweekly',text:'ตัวอย่างผู้ป่วยต้องขนส่งในภาชนะที่ถูกต้อง ปลอดภัย ป้องกันการรั่วซึม ตัวอย่างเชื้อโรคต้องติดป้าย Biohazard',req:'ISO15190 16 / FMS5'},
+{no:46,due:'Quarterly',text:'มีป้ายสัญลักษณ์ติดบนเครื่องมือหรือบริเวณที่ต้องการชี้บ่ง biohazard / สารเคมีอันตราย / สารกัมมันตรังสี',req:'ISO15190 6.1,7.1 / FMS5'},
+{no:47,due:'Quarterly',text:'มีภาชนะทิ้งของมีคมติดเชื้อ ไม่รั่วซึม มีป้าย biohazard ทิ้งแค่ 2 ใน 3 ของภาชนะ',req:'ISO15190 14.8 / FMS5'},
+{no:48,due:'Monthly',text:'มีชุดปฐมพยาบาลเบื้องต้น (First aid kit) และพร้อมใช้งานตลอดเวลา',req:'ISO15189 6.3.4 / ISO15190 10.2 / FMS5'},
+{no:49,due:'Monthly',text:'มีการจัดวาง/เก็บ/รักษาวัสดุ เครื่องมือ น้ำยา อย่างเหมาะสม หลีกเลี่ยงสิ่งกีดขวาง อันตรายจากการสะดุดหรือตกหล่น',req:'ISO9001 7.1.4 / ISO15190 4.2,18 / FMS5'},
+{no:50,due:'Biweekly',text:'มีการรายงานสภาพการทำงานที่ไม่ปลอดภัยและอุบัติเหตุ รายงานในเวลาที่กำหนด มีการประเมินสาเหตุและดำเนินการป้องกัน',req:'ISO9001 7.1.4 / ISO15190 5.8.2,19 / FMS4'},
+{no:51,due:'Monthly',text:'มีการวิเคราะห์ความเสี่ยงด้านความปลอดภัย ครอบคลุมทุกกระบวนการ อย่างน้อยปีละ 1 ครั้ง',req:'ISO9001 7.1.4 / ISO15190 6 / FMS4'},
+{no:52,due:'Quarterly',text:'นำผลจากการตรวจติดตามความเสี่ยงด้านความปลอดภัยครั้งก่อนมาใช้ในการบริหารจัดการความเสี่ยง',req:'ISO9001 7.1.4 / FMS4 FMS10'},
+{no:53,due:'Quarterly',text:'มีแนวทางปฏิบัติงานด้านความปลอดภัยสำหรับสถานการณ์ COVID-19 รวมถึงเทคโนโลยีใหม่ที่มีความเสี่ยงสูง',req:'ISO9001 7.1.4 / ISO15190 7.1 / FMS4'},
+{no:54,due:'Biweekly',text:'สวมใส่อุปกรณ์ป้องกันทางเดินหายใจเหมาะสม เช่น PAPR หรือ N-95 มีการทำ Fit test ก่อนใช้งานครั้งแรก',req:'ISO15190 15.7 / PCI9'},
+{no:55,due:'Annual',text:'มีการทำ Fit test ก่อนการใช้งานหน้ากากครั้งแรก',req:'—'},
+{no:56,due:'Annual',text:'มีการควบคุมการใช้ นำเข้า-ออก การจัดเก็บและการทำลายสารเคมีที่ถูกต้อง เป็นลายลักษณ์อักษร',req:'ISO9001 7.1.4 / ISO15190 8 / LA:2565 49*'},
+{no:57,due:'Quarterly',text:'จัดหาถุงมือป้องกันอันตรายจากการสัมผัสสารเคมี สารชีวภาพ สารกัมมันตรังสี วัตถุมีความเย็นจัดหรือร้อนจัด',req:'—'},
+{no:58,due:'Monthly',text:'มีก๊อกน้ำสำหรับล้างตา (emergency eyewash) อย่างน้อย 1 จุด เข้าถึงได้ง่าย ไม่มีสิ่งกีดขวาง มีการตรวจสอบสม่ำเสมอ',req:'ISO9001 7.1.4 / ISO15190 4.2,10.3 / FMS4'},
+{no:59,due:'Monthly',text:'สภาพแวดล้อมในการทำงานเหมาะสม ทางเข้าออก โถงทางเดินโล่ง ไม่มีสิ่งกีดขวาง ลิ้นชักโต๊ะเปิดได้ง่าย',req:'ISO9001 7.1.4 / ISO15190 4.2 / FMS5'},
+{no:60,due:'Quarterly',text:'อ่างล้างมือเป็นแบบใช้ศอกหรือเข่าเพื่อลดความเสี่ยงต่อการสัมผัสเชื้อ และระบายน้ำได้ดีไม่มีการอุดตัน',req:'ISO9001 7.1.4 / FMS9 PCI9'},
+{no:61,due:'Annual',text:'พื้นผิวต่างๆ เช่น พื้นผิวโต๊ะ เก้าอี้ และพื้น สามารถทนสารเคมีได้ ไม่ซึมผ่าน ทำความสะอาดได้ง่าย',req:'ISO9001 7.1.4 / ISO15190 4.2,7.3 / FMS5'},
+{no:62,due:'Biweekly',text:'ใช้ฝาครอบป้องกันบริเวณพื้นผิว ส่วนของการควบคุมคอมพิวเตอร์ เครื่อง Flow cytometer',req:'—'},
+{no:63,due:'Biweekly',text:'ทางเข้าห้องปฏิบัติการต้องมีประตูที่ปิดล็อคได้ จำกัดเฉพาะบุคลากรที่ได้รับอนุญาต',req:'ISO9001 7.1.4 / ISO15190 4.3.3,7.3 / FMS5'},
+{no:64,due:'Monthly',text:'มีการจัดทำบัญชีรายการสารเคมี และต้องได้รับการทบทวนอย่างสม่ำเสมอ',req:'ISO9001 7.1.4 / ISO15190 4.3.4,8.5 / FMS5'},
+{no:65,due:'Annual',text:'มีแนวปฏิบัติเมื่อเกิดอุบัติการณ์ อุบัติเหตุจากการทำงาน รวมถึงมีเบอร์ติดต่อขอความช่วยเหลือฉุกเฉิน',req:'ISO9001 7.1.4 / ISO15190 4.3.6,19 / FMS11'},
+{no:66,due:'Annual',text:'หน่วยงานมีแผนรองรับฉุกเฉิน เช่น แผนอพยพ สารเคมีรั่วไหล ภัยพิบัติ และเจ้าหน้าที่ทราบแผนเหล่านี้',req:'ISO9001 7.1.4 / ISO15190 5.2,10,11.1,11.2 / FMS6'},
+{no:67,due:'Monthly',text:'มีแนวปฏิบัติความปลอดภัยชีวภาพ เช่น เปิดภาชนะในตู้ชีวนิรภัย BSC ปิด Tube ทุกครั้งเมื่อนำเข้าเครื่องปั่น',req:'ISO9001 7.1.4 / PCI10'},
+{no:68,due:'Monthly',text:'การติดป้ายบ่งชี้สารเคมี สัญลักษณ์อันตราย วันที่เปิดใช้งาน วันหมดอายุ และมีเอกสาร SDS ของสารเคมีทุกรายการ',req:'ISO9001 7.1.4 / ISO15190 8.2 / FMS5'},
+{no:69,due:'Monthly',text:'การจัดเก็บสารเคมีเหมาะสม แยกสารเคมีที่ทำปฏิกิริยากัน สารกัดกร่อน สารไวไฟต้องจัดเก็บแยกกันในตู้ที่ได้รับการรับรองเฉพาะ',req:'ISO9001 7.1.4 / ISO15190 8.5 / FMS5'},
+{no:70,due:'Monthly',text:'จัดเก็บสารเคมีในสถานที่เหมาะสม ไม่โดนความร้อน แสงแดด ไม่จัดเก็บบนหลังตู้หรือบนพื้น',req:'ISO9001 7.1.4 / ISO15190 8.5 / FMS5'},
+{no:71,due:'Quarterly',text:'หลีกเลี่ยงการใช้สายไฟพ่วงและอแดปเตอร์หลายอัน กรณีใช้ต้องมีมาตรฐานรับรอง',req:'ISO9001 7.1.4 / ISO15190 9.3 / FMS9'},
+{no:72,due:'Quarterly',text:'มี Emergency/Drench showers ใกล้จุดปฏิบัติงานที่มีความเสี่ยง มีการตรวจสอบสม่ำเสมอ',req:'ISO9001 7.1.4 / ISO15190 10.4 / FMS9'},
+{no:73,due:'Quarterly',text:'มีการติดแผนผังแสดงเส้นทางอพยพหนีไฟในอาคาร',req:'ISO9001 7.1.4 / ISO15190 11.2 / FMS7'},
+{no:74,due:'Annual',text:'มีการติดวัตถุประสงค์ของการใช้งานตู้เย็นอย่างชัดเจน',req:'ISO9001 7.1.4 / ISO15190 14.1 / FMS8'},
+{no:75,due:'Biweekly',text:'ของใช้ส่วนตัวต้องจัดเก็บในพื้นที่ที่ไม่ใช่พื้นที่ห้องปฏิบัติการ หรือในตู้เก็บของส่วนบุคคลที่ปิดล็อคได้',req:'ISO9001 7.1.4 / ISO15190 14.4 / FMS5'},
+{no:76,due:'Quarterly',text:'ในพื้นที่ห้องปฏิบัติการไม่ควรมีการตกแต่งตามงานประเพณีที่อาจก่อให้เกิดการปนเปื้อนและ/หรืออันตรายจากไฟไหม้',req:'ISO9001 7.1.4 / ISO15190 14.5 / FMS5'},
+{no:77,due:'Monthly',text:'มีการเฝ้าระวังสุขภาพของบุคลากรทั้งทางร่างกายและจิตใจ',req:'—'},
+{no:78,due:'Annual',text:'ส่งเสริมให้บุคลากรเข้ารับการฉีดวัคซีนป้องกันการติดเชื้อ เช่น ไวรัสตับอักเสบบี และมีบันทึกการฉีดวัคซีน',req:'—'},
+{no:79,due:'Monthly',text:'มีการจัดเตรียมอุปกรณ์รับมือเหตุฉุกเฉินให้พร้อมใช้งาน ตามที่กำหนดไว้ในมาตรฐานการปฏิบัติงาน',req:'—'},
+{no:80,due:'Quarterly',text:'อุปกรณ์ที่ต่อกับระบบประปา มีการตรวจสอบระบบการทำงานเป็นประจำทุกปี',req:'—'},
+{no:81,due:'Biweekly',text:'ข้อมูลส่วนบุคคลของผู้ป่วยได้รับการป้องกัน มีระบบ security',req:'—'},
+{no:82,due:'Monthly',text:'ไม่มีการใช้และเก็บน้ำยาที่หมดอายุในหน่วยงาน',req:'—'},
+{no:83,due:'Monthly',text:'ไม่พบคราบเชื้อราในพื้นที่การทำงาน เช่น เพดาน หรือบริเวณอ่างล้างมือ',req:'—'},
+{no:84,due:'Monthly',text:'ตรวจสอบความเสื่อมสภาพขอบยางโอริงของเครื่องหมุนเหวียง เปิดฝาเฉพาะตอนที่เครื่องหยุดสนิท ล้างทำความสะอาด bucket & chamber สม่ำเสมอ',req:'—'},
+{no:85,due:'Monthly',text:'มีการตรวจสอบความพร้อมใช้งานของเครื่องมือ (Maintenance and function check) และมีบันทึกการดำเนินการ',req:'—'},
+{no:86,due:'Biweekly',text:'มีการแขวนป้ายพนักงานในพื้นที่ปฏิบัติงาน',req:'—'},
+{no:87,due:'Biweekly',text:'สวมใส่หน้ากากป้องกันใบหน้าหรือแว่นตานิรภัยทุกครั้งในการปฏิบัติงานที่มีโอกาสเกิดการกระเด็น เปิดฝาหลอดตัวอย่างให้หันออกจากตัวคน',req:'—'},
+{no:88,due:'Biweekly',text:'จัดการ waste จากเครื่องตรวจวิเคราะห์อย่างเหมาะสม',req:'—'},
+{no:89,due:'Biweekly',text:'พนักงานตระหนักในมาตรฐานข้อควรระมัดระวัง (Universal precaution) การปฏิบัติงานประจำวัน',req:'—'},
+{no:90,due:'Biweekly',text:'พนักงานเก็บรวบและคลุมผมด้วยหมวกให้เรียบร้อย',req:'—'},
+{no:91,due:'Biweekly',text:'ไม่สวมคืนปลอกเข็มด้วยมือ หรือถอดออกจากกระบอกฉีดยาหรือที่ยึดด้วยมือเปล่า',req:'—'},
+];
+
+let ANS={},NOTES={},PHOTOS={},LOGS=[],CUR=null,CURFIL='All';
+let WURL='',SID='',SETUP_OK=false;
+
+function init(){
+  document.getElementById('sdate').value=new Date().toISOString().split('T')[0];
+  const cfg=localStorage.getItem('la_cfg');
+  if(cfg){const c=JSON.parse(cfg);WURL=c.u||'';SID=c.s||'';if(WURL){SETUP_OK=true;setSyncInd(true);if(document.getElementById('isid'))document.getElementById('isid').value=SID;if(document.getElementById('iwurl'))document.getElementById('iwurl').value=WURL;}}
+  const lg=localStorage.getItem('la_logs');if(lg)LOGS=JSON.parse(lg);
+  renderList();updStats();updStatus();updASCode();
+}
+
+function go(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('on');
+  if(p==='logs')renderLogs();
+  if(p==='report')fillRepSel();
+}
+
+function filt(f,btn){CURFIL=f;document.querySelectorAll('.fc').forEach(c=>c.classList.remove('on'));btn.classList.add('on');renderList();}
+
+function chipCls(d){return{Annual:'ca',Quarterly:'cq',Monthly:'cm',Biweekly:'cb'}[d]||'';}
+
+function renderList(){
+  const items=CURFIL==='All'?CL:CL.filter(i=>i.due===CURFIL);
+  const el=document.getElementById('clist');
+  el.innerHTML=items.map(item=>{
+    const r=ANS[item.no];
+    const cls=r==='Y'?'dn':r==='N'?'fl':r==='NA'?'xna':'';
+    const badge=r?`<span class="badge b${r.toLowerCase()}">${r}</span>`:`<span class="badge bp">—</span>`;
+    const short=item.text.length>75?item.text.substring(0,75)+'…':item.text;
+    return`<div class="ci ${cls}" onclick="openItem(${item.no})">
+      <div class="ctop"><span class="cno">${item.no}.</span><span class="ctx">${short}</span></div>
+      <div class="cft"><span class="chip ${chipCls(item.due)}">${item.due}</span>${badge}</div>
+    </div>`;
+  }).join('');
+}
+
+function openItem(no){
+  CUR=no;const item=CL.find(i=>i.no===no);
+  document.getElementById('sht').textContent='ข้อ '+no;
+  document.getElementById('shs').textContent=item.due+' · กดเลือกผลการตรวจสอบ';
+  document.getElementById('shreq').textContent=item.text+'\n\nมาตรฐาน: '+item.req;
+  document.getElementById('snote').value=NOTES[no]||'';
+  ['by','bn','bna'].forEach(id=>document.getElementById(id).className='yb');
+  if(ANS[no]){const m={Y:'sy',N:'sn',NA:'sna'};document.getElementById('b'+ANS[no].toLowerCase()).classList.add(m[ANS[no]]);}
+  renderPGrid(no);
+  document.getElementById('iov').classList.add('open');
+}
+function setA(v){ANS[CUR]=v;['by','bn','bna'].forEach(id=>document.getElementById(id).className='yb');const m={Y:'sy',N:'sn',NA:'sna'};document.getElementById('b'+v.toLowerCase()).classList.add(m[v]);}
+function saveItem(){NOTES[CUR]=document.getElementById('snote').value;closeSheet();renderList();updStats();}
+function closeSheet(){document.getElementById('iov').classList.remove('open');}
+function closeOv(e){if(e.target===document.getElementById('iov'))closeSheet();}
+
+function pickPh(){document.getElementById('finput').click();}
+function handlePh(e){
+  const files=Array.from(e.target.files);
+  if(!PHOTOS[CUR])PHOTOS[CUR]=[];
+  files.forEach(f=>{const r=new FileReader();r.onload=ev=>{PHOTOS[CUR].push(ev.target.result);renderPGrid(CUR);};r.readAsDataURL(f);});
+  e.target.value='';
+}
+function rmPh(i){PHOTOS[CUR].splice(i,1);renderPGrid(CUR);}
+function renderPGrid(no){
+  const g=document.getElementById('pgrid');
+  const imgs=PHOTOS[no]||[];
+  g.innerHTML=imgs.map((s,i)=>`<div class="pthumb"><img src="${s}"><button class="pdel" onclick="rmPh(${i})">✕</button></div>`).join('')+`<div class="padd" onclick="pickPh()">+</div>`;
+}
+
+function updStats(){
+  const done=Object.keys(ANS).length;
+  const n=Object.values(ANS).filter(v=>v==='N').length;
+  document.getElementById('s1').textContent=done;
+  document.getElementById('s2').textContent=91-done;
+  document.getElementById('s3').textContent=n;
+  const pct=Math.round(done/91*100);
+  document.getElementById('pb').style.width=pct+'%';
+  document.getElementById('pt').textContent=done+' จาก 91 รายการ ('+pct+'%)';
+}
+
+async function saveAudit(){
+  const aud=document.getElementById('saudi').value;
+  const date=document.getElementById('sdate').value;
+  if(!aud||!date){toast('กรุณาเลือกผู้ตรวจและวันที่');return;}
+  if(Object.keys(ANS).length===0){toast('กรุณาตรวจสอบอย่างน้อย 1 รายการ');return;}
+  const log={id:Date.now(),date,auditor:aud,
+    items:CL.map(item=>({no:item.no,due:item.due,text:item.text,req:item.req,result:ANS[item.no]||null,note:NOTES[item.no]||'',pc:(PHOTOS[item.no]||[]).length})),
+    sum:{Y:Object.values(ANS).filter(v=>v==='Y').length,N:Object.values(ANS).filter(v=>v==='N').length,NA:Object.values(ANS).filter(v=>v==='NA').length,tot:Object.keys(ANS).length}};
+  LOGS.push(log);localStorage.setItem('la_logs',JSON.stringify(LOGS));
+  if(WURL){
+    const btn=document.getElementById('sbtn');btn.disabled=true;btn.textContent='⏳ กำลัง sync...';
+    try{await syncSheets(log);toast('✅ บันทึกลง Google Sheets สำเร็จ!');}
+    catch(e){toast('⚠️ บันทึก local สำเร็จ แต่ sync ไม่ได้');}
+    btn.disabled=false;btn.textContent='💾 บันทึกลง Google Sheets';
+  }else{toast('✅ บันทึก local สำเร็จ');}
+  go('logs');
+}
+
+async function syncSheets(log){
+  const rows=log.items.filter(i=>i.result).map(i=>[log.date,log.auditor,i.due,i.no,i.text,i.req,i.result||'',i.note,i.pc>0?i.pc+' รูป':'']);
+  await fetch(WURL,{method:'POST',body:JSON.stringify({action:'appendRows',rows}),headers:{'Content-Type':'text/plain'}});
+}
+
+function clearS(){if(!confirm('ล้างค่าทั้งหมดในการตรวจครั้งนี้?'))return;ANS={};NOTES={};PHOTOS={};renderList();updStats();toast('ล้างข้อมูลแล้ว');}
+
+function renderLogs(){
+  const c=document.getElementById('llist');
+  if(LOGS.length===0){c.innerHTML='<div class="empty"><div class="ei">📋</div><div>ยังไม่มีข้อมูล Audit</div></div>';return;}
+  c.innerHTML=LOGS.slice().reverse().map(log=>`
+    <div class="li">
+      <div class="lh">
+        <div><div class="ld">${log.date}</div><div class="la">${log.auditor}</div></div>
+        <button class="bp2" style="width:auto;padding:6px 12px;font-size:12px;margin:0;" onclick="toRep('${log.id}')">รายงาน</button>
+      </div>
+      <div class="ls"><span class="badge by">Y: ${log.sum.Y}</span><span class="badge bn">N: ${log.sum.N}</span><span class="badge bna">NA: ${log.sum.NA}</span><span style="font-size:11px;color:var(--tx2);">รวม ${log.sum.tot} รายการ</span></div>
+      <div class="prog" style="margin-top:8px;"><div class="pf" style="width:${Math.round(log.sum.tot/91*100)}%"></div></div>
+    </div>`).join('');
+}
+
+function fillRepSel(){
+  const s=document.getElementById('srlog');
+  if(LOGS.length===0){s.innerHTML='<option>— ยังไม่มีข้อมูล —</option>';return;}
+  s.innerHTML=LOGS.map(l=>`<option value="${l.id}">${l.date} — ${l.auditor}</option>`).join('');
+}
+function toRep(id){go('report');setTimeout(()=>{document.getElementById('srlog').value=id;},50);}
+
+const APPROVER_NAME='จีรวรรณ ศรีษะคำ';
+const APPROVER_ROLE='Quality Manager';
+
+function buildReport(){
+  const id=parseInt(document.getElementById('srlog').value);
+  const freq=document.getElementById('srfreq').value;
+  const log=LOGS.find(l=>l.id===id);
+  if(!log){toast('กรุณาเลือก Audit ก่อน');return;}
+  const items=(freq==='All'?log.items:log.items.filter(i=>i.due===freq)).filter(i=>i.result);
+  const Y=items.filter(i=>i.result==='Y').length,N=items.filter(i=>i.result==='N').length,NA=items.filter(i=>i.result==='NA').length;
+  const cc=d=>({Annual:'ca',Quarterly:'cq',Monthly:'cm',Biweekly:'cb'}[d]||'');
+  const chipColor=d=>({Annual:'background:#E6F1FB;color:#0C447C',Quarterly:'background:#EEEDFE;color:#3C3489',Monthly:'background:#EAF3DE;color:#27500A',Biweekly:'background:#FAEEDA;color:#854F0B'}[d]||'background:#F1EFE8;color:#444441');
+  const rows=items.map(i=>{
+    const col=i.result==='Y'?'#3B6D11':i.result==='N'?'#A32D2D':'#444441';
+    return`<tr><td style="width:24px;color:#888;font-size:12px;vertical-align:top;padding:8px 4px;">${i.no}</td><td style="padding:8px 4px;font-size:12px;line-height:1.6;vertical-align:top;">${i.text}<br><span style="display:inline-block;margin-top:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;${chipColor(i.due)}">${i.due}</span>${i.note?`<br><span style="font-size:11px;color:#5F5E5A;margin-top:4px;display:block;">📝 ${i.note}</span>`:''}</td><td style="text-align:center;font-weight:700;color:${col};font-size:14px;vertical-align:top;padding:8px 4px;">${i.result}</td></tr>`;
+  }).join('');
+  const iss=items.filter(i=>i.result==='N'&&i.note);
+  const reportId='report-printable';
+  document.getElementById('rout').innerHTML=`
+    <button class="bp1" onclick="exportPDF()" style="background:#A32D2D;margin-bottom:4px;">🖨 Export PDF / สั่งพิมพ์</button>
+    <button class="bp2" onclick="buildReport()" style="margin-bottom:12px;">🔄 สร้างใหม่</button>
+    <div id="${reportId}" style="background:#fff;border-radius:12px;border:0.5px solid rgba(0,0,0,0.1);padding:20px 18px;margin-bottom:16px;">
+      <div style="text-align:center;border-bottom:1px solid #ddd;padding-bottom:14px;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;color:#1a1a18;">แบบบันทึกการสำรวจและประเมินความพร้อมในการปฏิบัติงาน</div>
+        <div style="font-size:12px;color:#5F5E5A;margin-top:4px;">ห้องปฏิบัติการ Biomolecular Laboratory</div>
+      </div>
+      <table style="width:100%;font-size:12px;margin-bottom:12px;border-collapse:collapse;">
+        <tr>
+          <td style="padding:3px 0;color:#5F5E5A;width:80px;">ผู้จัดทำ</td>
+          <td style="padding:3px 0;font-weight:600;">${log.auditor}</td>
+          <td style="padding:3px 0;color:#5F5E5A;width:60px;">วันที่</td>
+          <td style="padding:3px 0;font-weight:600;">${log.date}</td>
+        </tr>
+        <tr>
+          <td style="padding:3px 0;color:#5F5E5A;">ความถี่</td>
+          <td style="padding:3px 0;font-weight:600;">${freq}</td>
+          <td style="padding:3px 0;color:#5F5E5A;">ผลรวม</td>
+          <td style="padding:3px 0;"><span style="background:#EAF3DE;color:#27500A;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">Y: ${Y}</span> <span style="background:#FCEBEB;color:#A32D2D;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">N: ${N}</span> <span style="background:#F1EFE8;color:#444441;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;">NA: ${NA}</span></td>
+        </tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;border:0.5px solid #ddd;">
+        <thead><tr style="background:#f5f5f3;">
+          <th style="padding:8px 4px;font-size:11px;color:#5F5E5A;text-align:left;border-bottom:1px solid #ddd;width:24px;">ลำดับ</th>
+          <th style="padding:8px 4px;font-size:11px;color:#5F5E5A;text-align:left;border-bottom:1px solid #ddd;">รายการ / Checklist</th>
+          <th style="padding:8px 4px;font-size:11px;color:#5F5E5A;text-align:center;border-bottom:1px solid #ddd;width:36px;">ผล</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${iss.length?`<div style="margin-top:16px;border-top:1px solid #ddd;padding-top:12px;"><div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#A32D2D;">รายการที่ไม่ผ่าน — รายละเอียด</div>${iss.map(i=>`<div style="font-size:12px;padding:6px 0;border-bottom:0.5px solid #eee;"><span style="color:#5F5E5A;">ข้อ ${i.no}:</span> ${i.note}</div>`).join('')}</div>`:''}
+      <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:32px;font-size:12px;">
+        <div style="flex:1;">
+          <div style="color:#5F5E5A;margin-bottom:24px;">ผู้จัดทำ</div>
+          <div style="border-bottom:1px solid #333;width:140px;margin-bottom:6px;"></div>
+          <div style="font-weight:600;">${log.auditor}</div>
+          <div style="color:#5F5E5A;">วันที่ ${log.date}</div>
+        </div>
+        <div style="flex:1;">
+          <div style="color:#5F5E5A;margin-bottom:24px;">ผู้อนุมัติ</div>
+          <div style="border-bottom:1px solid #333;width:140px;margin-bottom:6px;"></div>
+          <div style="font-weight:600;">${APPROVER_NAME}</div>
+          <div style="color:#5F5E5A;">${APPROVER_ROLE}</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;font-size:10px;color:#aaa;text-align:right;">FP-BML-BIO-00-018 · สร้างโดย Lab Safety Audit App</div>
+    </div>`;
+}
+
+function exportPDF(){
+  const el=document.getElementById('report-printable');
+  if(!el){toast('กรุณาสร้างรายงานก่อน');return;}
+  const style=`<style>
+    body{font-family:'Noto Sans Thai',Arial,sans-serif;font-size:12px;color:#1a1a18;margin:0;padding:20px;}
+    table{width:100%;border-collapse:collapse;}
+    th,td{padding:7px 5px;}
+    @media print{body{padding:10px;}button{display:none!important;}}
+  </style>`;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>Lab Safety Audit Report</title>${style}</head><body>${el.outerHTML}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+  win.document.close();
+}
+
+function updASCode(){
+  const sid=(document.getElementById('isid')&&document.getElementById('isid').value)||SID||'YOUR_SHEET_ID_HERE';
+  const code=`function doPost(e) {
+  try {
+    var d = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.openById("${sid}");
+    var sh = ss.getSheetByName("Audit log") || ss.insertSheet("Audit log");
+    if (sh.getLastRow() === 0) {
+      sh.appendRow(["Inspection Date","Auditor","Due by","Item No",
+        "Checklist","Requirement","Conclusion (Y/N/NA)","Evidence","Photos"]);
+    }
+    if (d.action === "appendRows") {
+      d.rows.forEach(function(r){ sh.appendRow(r); });
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"ok"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({status:"error",msg:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({status:"ready"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+  const el=document.getElementById('ascode');if(el)el.textContent=code;
+}
+
+function chkSetup(){
+  updASCode();
+  const sid=document.getElementById('isid').value.trim();
+  const url=document.getElementById('iwurl').value.trim();
+  document.getElementById('tbtn').disabled=!(sid.length>10&&url.includes('script.google.com'));
+}
+
+async function copyCode(){
+  const code=document.getElementById('ascode').textContent;
+  try{await navigator.clipboard.writeText(code);toast('คัดลอกโค้ดแล้ว!');}
+  catch{toast('กด copy ด้วยตนเองจากกล่องโค้ดด้านบน');}
+}
+
+async function testConn(){
+  const url=document.getElementById('iwurl').value.trim();
+  const btn=document.getElementById('tbtn');
+  const res=document.getElementById('tres');
+  btn.disabled=true;btn.textContent='⏳ กำลังทดสอบ...';
+  try{
+    const r=await fetch(url+'?test=1');
+    await r.text();
+    res.innerHTML='<div class="sbar sok">✅ เชื่อมต่อสำเร็จ! พร้อม sync กับ Google Sheets</div>';
+    document.getElementById('svbtn').disabled=false;
+  }catch(e){
+    res.innerHTML='<div class="sbar ser">❌ เชื่อมต่อไม่ได้: '+e.message+'<br>ตรวจสอบ URL และ Deploy settings อีกครั้ง</div>';
+  }
+  btn.disabled=false;btn.textContent='🔗 ทดสอบการเชื่อมต่อ';
+}
+
+function doSave(){
+  const sid=document.getElementById('isid').value.trim();
+  const url=document.getElementById('iwurl').value.trim();
+  SID=sid;WURL=url;SETUP_OK=true;
+  localStorage.setItem('la_cfg',JSON.stringify({s:sid,u:url}));
+  setSyncInd(true);updStatus();toast('✅ บันทึกการตั้งค่าสำเร็จ!');
+  setTimeout(()=>go('home'),1200);
+}
+
+function setSyncInd(ok){
+  const el=document.getElementById('syncind');
+  el.textContent=ok?'☁️ Google Sheets':'⚡ Local';
+  el.style.color=ok?'var(--green)':'var(--tx3)';
+}
+
+function updStatus(){
+  const bar=document.getElementById('hstatus');
+  if(SETUP_OK)bar.innerHTML='<div class="sbar sok">☁️ เชื่อมต่อ Google Sheets แล้ว — ข้อมูลจะ sync อัตโนมัติ</div>';
+  else bar.innerHTML='<div class="sbar swn">⚠️ ยังไม่ได้ตั้งค่า Google Sheets — ข้อมูลเก็บใน browser นี้เท่านั้น</div>';
+}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+init();
+</script>
+</body>
+</html>
